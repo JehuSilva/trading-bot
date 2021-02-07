@@ -2,12 +2,12 @@
 from app.BinanceAPI import BinanceAPI
 from config import BINANCE
 from app.utils import logger
+import numpy as np
 import websocket
 import talib
-import numpy
 import json
 
-RSI_PERIOD= 14
+RSI_PERIOD = 14
 RSI_OVERSOLD = 30
 RSI_OVERBOUGHT = 70
 TRADE_SYMBOL = 'ETHUSD'
@@ -15,7 +15,7 @@ TRADE_QUANTITY = 0.05
 SOCKET = 'wss://stream.binance.com:9443/ws/ethusdt@kline_1m'
 
 closes = []
-in_position = False
+in_position = True
 
 client=BinanceAPI(BINANCE['key'],BINANCE['secret'])
 
@@ -29,8 +29,6 @@ def on_message(ws,message):
     global closes
     global in_position
 
-
-
     #logger('Received message')
     message = json.loads(message)
     candle = message['k']
@@ -42,20 +40,21 @@ def on_message(ws,message):
     if is_candle_close:
         logger(f'Candle closed at {close}')
         closes.append(float(close))
+        if len(closes) > RSI_PERIOD:
 
-        if len (closes) > RSI_PERIOD:
-            np_closes = numpy.array(closes)
-            rsi = talib.RSI(closes,RSI_PERIOD)
+            np_closes = np.array(closes)
+            rsi = talib.RSI(np_closes,RSI_PERIOD)
             last_rsi = rsi[-1]
-            logger(f'RSI = {last_rsi}')
+            
 
             if last_rsi > RSI_OVERBOUGHT:
                 if in_position:
                     logger('Overbought! Sell! Sell!')
                     try:
                         logger('Sending order')
+                        logger(f'RSI: {last_rsi}')
                         order = client.sell_market(TRADE_SYMBOL,TRADE_QUANTITY)
-                        logger(f'Order number = {order}  Closed at: {close}','green',True)
+                        logger(f'Order number : {order}  Closed at: {close}','green',True)
                         in_position = False
                     except Exception as e:
                         logger(f'Transaction could not be completed')
@@ -70,6 +69,7 @@ def on_message(ws,message):
                     logger('Overbought! Buy! Buy!')
                     try:
                         logger('Sending order')
+                        logger(f'RSI: {last_rsi}')
                         order = client.buy_market(TRADE_SYMBOL,TRADE_QUANTITY)
                         logger(f'Order number = {order}  Closed at: {close}','red',True)
                         in_position = True

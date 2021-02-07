@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from app.BinanceAPI import BinanceAPI
 from config import BINANCE
 from app.utils import logger

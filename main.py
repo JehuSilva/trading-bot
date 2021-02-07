@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from app.BinanceAPI import BinanceAPI
-from config import BINANCE
 from app.utils import logger
+from config import BINANCE
 import numpy as np
 import websocket
 import talib
@@ -16,7 +16,6 @@ SOCKET = 'wss://stream.binance.com:9443/ws/ethusdt@kline_1m'
 
 closes = []
 in_position = True
-
 client=BinanceAPI(BINANCE['key'],BINANCE['secret'])
 
 def on_open(ws):
@@ -49,12 +48,11 @@ def on_message(ws,message):
 
             if last_rsi > RSI_OVERBOUGHT:
                 if in_position:
-                    logger('Overbought! Sell! Sell!')
                     try:
-                        logger('Sending order')
-                        logger(f'RSI: {last_rsi}')
+                        logger('Overbought! Sell! Sell!','green')
+                        logger('Sending order','green')
                         order = client.sell_market(TRADE_SYMBOL,TRADE_QUANTITY)
-                        logger(f'Order number : {order}  Closed at: {close}','green',True)
+                        logger(f'Order number: {order}  Closed at: {close} RSI: {last_rsi}','green',True)
                         in_position = False
                     except Exception as e:
                         logger(f'Transaction could not be completed')
@@ -66,12 +64,11 @@ def on_message(ws,message):
                 if in_position:
                     logger('It is oversold, but you already own it. Nothing to do')
                 else:
-                    logger('Overbought! Buy! Buy!')
                     try:
-                        logger('Sending order')
-                        logger(f'RSI: {last_rsi}')
+                        logger('Overbought! Buy! Buy!','red')
+                        logger('Sending order','red')
                         order = client.buy_market(TRADE_SYMBOL,TRADE_QUANTITY)
-                        logger(f'Order number = {order}  Closed at: {close}','red',True)
+                        logger(f'Order number: {order}  Closed at: {close} RSI: {last_rsi}','red',True)
                         in_position = True
                     except Exception as e:
                         logger(f'Transaction could not be completed')
@@ -89,7 +86,7 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         logger('Bot finished by user','cyan',True)
         logger('Finished.')
-        time = dt.datetime.now().strftime('%d-%m-%y %H:%M')
     except Exception as err:
         logger(f'Bot finished with error: {err}','cyan',True)
-        raise
+    finally:
+        logger('Lex finished','cyan',True)

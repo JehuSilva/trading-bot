@@ -10,7 +10,7 @@ import json
 RSI_PERIOD = 14
 RSI_OVERSOLD = 30
 RSI_OVERBOUGHT = 70
-TRADE_SYMBOL = 'ETHUSD'
+TRADE_SYMBOL = 'ETHUSDT'
 TRADE_QUANTITY = 0.05
 SOCKET = 'wss://stream.binance.com:9443/ws/ethusdt@kline_1m'
 

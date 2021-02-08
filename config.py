@@ -19,4 +19,8 @@ TELEGRAM = {
   'bot': '1635215508:AAEyC0Kj0uSxu8TlIR90GXCBnmsegd1jP0U'
 }
 
+# recvWindow should less than 60000
+recv_window = 5000
+
+
 print('ENV = ', ENV)

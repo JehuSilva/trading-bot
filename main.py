@@ -11,11 +11,11 @@ RSI_PERIOD = 14
 RSI_OVERSOLD = 30
 RSI_OVERBOUGHT = 70
 TRADE_SYMBOL = 'ETHUSDT'
-TRADE_QUANTITY = 0.05
+TRADE_QUANTITY = 0.03
 SOCKET = 'wss://stream.binance.com:9443/ws/ethusdt@kline_1m'
 
 closes = []
-in_position = True
+in_position = False
 client=BinanceAPI(BINANCE['key'],BINANCE['secret'])
 
 def on_open(ws):
@@ -44,7 +44,6 @@ def on_message(ws,message):
             rsi = talib.RSI(np_closes,RSI_PERIOD)
             last_rsi = rsi[-1]
             logger(f'Symbol: {TRADE_SYMBOL}  Close Price: {close} USD  RSI:{last_rsi}')
-            
 
             if last_rsi > RSI_OVERBOUGHT:
                 if in_position:
@@ -52,14 +51,14 @@ def on_message(ws,message):
                         logger('Overbought! Sell! Sell!','green')
                         logger('Sending order','green')
                         order = client.sell_market(TRADE_SYMBOL,TRADE_QUANTITY)
-                        logger(f'Order number: {order}  Closed at: {close} RSI: {last_rsi}','green',True)
+                        logger(f'>>SOLD<< Symbol:{TRADE_SYMBOL}  Price: {close}  RSI: {last_rsi}','green',True)
                         in_position = False
                     except Exception as e:
-                        logger(f'Transaction could not be completed')
+                        logger(f'Transaction could not be completed','cyan',True)
+                        logger(e)
                 else:
                     logger('It is overbought, but you already own it. Nothing to do')
 
-            
             if last_rsi < RSI_OVERSOLD:
                 if in_position:
                     logger('It is oversold, but you already own it. Nothing to do')
@@ -68,11 +67,14 @@ def on_message(ws,message):
                         logger('Overbought! Buy! Buy!','red')
                         logger('Sending order','red')
                         order = client.buy_market(TRADE_SYMBOL,TRADE_QUANTITY)
-                        logger(f'Order number: {order}  Closed at: {close} RSI: {last_rsi}','red',True)
+                        logger(f'>> BOUGHT << Symbol:{TRADE_SYMBOL}  Price: {close}  RSI: {last_rsi}','green',True)
                         in_position = True
                     except Exception as e:
-                        logger(f'Transaction could not be completed')
-                    
+                        logger(f'Transaction could not be completed','cyan',True)
+                        logger(e)
+
+
+
 
 
 if __name__ == '__main__':

@@ -37,13 +37,13 @@ def on_message(ws,message):
 
 
     if is_candle_close:
-        logger(f'Candle closed at {close}')
         closes.append(float(close))
         if len(closes) > RSI_PERIOD:
 
             np_closes = np.array(closes)
             rsi = talib.RSI(np_closes,RSI_PERIOD)
             last_rsi = rsi[-1]
+            logger(f'Symbol: {TRADE_SYMBOL}  Close Price: {close} USD  RSI:{last_rsi}')
             
 
             if last_rsi > RSI_OVERBOUGHT:

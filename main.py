@@ -67,7 +67,7 @@ def on_message(ws,message):
                         logger('Overbought! Buy! Buy!','red')
                         logger('Sending order','red')
                         order = client.buy_market(TRADE_SYMBOL,TRADE_QUANTITY)
-                        logger(f'>> BOUGHT << Symbol:{TRADE_SYMBOL}  Price: {close}  RSI: {last_rsi}','green',True)
+                        logger(f'>> BOUGHT << Symbol:{TRADE_SYMBOL}  Price: {close}  RSI: {last_rsi}','red',True)
                         in_position = True
                     except Exception as e:
                         logger(f'Transaction could not be completed','cyan',True)

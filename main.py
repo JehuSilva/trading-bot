@@ -51,7 +51,15 @@ def on_message(ws,message):
                         logger('Overbought! Sell! Sell!','green')
                         logger('Sending order','green')
                         order = client.sell_market(TRADE_SYMBOL,TRADE_QUANTITY)
-                        logger(f'>>SOLD<< Symbol:{TRADE_SYMBOL}  Price: {close}  RSI: {last_rsi}','green',True)
+                        message = 'Sym: %s  OrderID: %s  QTY: %.5s  '\
+                                'Price: %.7s  Commission: %.6s'% (
+                                order['symbol'], 
+                                order['orderId'],
+                                order['executedQty'],
+                                order['fills'][0]['price'],
+                                order['fills'][0]['commission']
+                        )
+                        logger(message,'Green',True)
                         in_position = False
                     except Exception as e:
                         logger(f'Transaction could not be completed','cyan',True)
@@ -61,17 +69,28 @@ def on_message(ws,message):
 
             if last_rsi < RSI_OVERSOLD:
                 if in_position:
-                    logger('It is oversold, but you already own it. Nothing to do')
+                    logger('It is oversold, but you already own it. Nothing to do.')
                 else:
                     try:
                         logger('Overbought! Buy! Buy!','red')
                         logger('Sending order','red')
                         order = client.buy_market(TRADE_SYMBOL,TRADE_QUANTITY)
-                        logger(f'>> BOUGHT << Symbol:{TRADE_SYMBOL}  Price: {close}  RSI: {last_rsi}','red',True)
+                        message = 'Sym: %s  OrderID: %s  QTY: %.5s  '\
+                                'Price: %.7s  Commission: %.6s'% (
+                                order['symbol'], 
+                                order['orderId'],
+                                order['executedQty'],
+                                order['fills'][0]['price'],
+                                order['fills'][0]['commission']
+                        )
+                        logger(message,'red',True)
                         in_position = True
                     except Exception as e:
                         logger(f'Transaction could not be completed','cyan',True)
                         logger(e)
+        
+        else:
+            logger(f'Closes size: {len(closes)}, Retrivering data...')
 
 
 

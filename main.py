@@ -28,10 +28,9 @@ def on_message(ws,message):
     global closes
     global in_position
 
-    #logger('Received message')
+
     message = json.loads(message)
     candle = message['k']
-
     is_candle_close = candle['x']
     close = candle['c']
 
@@ -43,7 +42,11 @@ def on_message(ws,message):
             np_closes = np.array(closes)
             rsi = talib.RSI(np_closes,RSI_PERIOD)
             last_rsi = rsi[-1]
-            logger(f'Symbol: {TRADE_SYMBOL}  Close Price: {close} USD  RSI:{last_rsi}')
+            logger('Sym: %s  Close: %0.6s  RSI: %0.6s' % (
+                TRADE_SYMBOL,
+                close,
+                last_rsi
+            ))
 
             if last_rsi > RSI_OVERBOUGHT:
                 if in_position:
@@ -51,7 +54,7 @@ def on_message(ws,message):
                         logger('Overbought! Sell! Sell!','green')
                         logger('Sending order','green')
                         order = client.sell_market(TRADE_SYMBOL,TRADE_QUANTITY)
-                        message = 'Sym: %s  OrderID: %s  QTY: %.5s  '\
+                        message = 'SELL> Sym: %s  OrderID: %s  QTY: %.5s  '\
                                 'Price: %.7s  Commission: %.6s'% (
                                 order['symbol'], 
                                 order['orderId'],
@@ -59,11 +62,10 @@ def on_message(ws,message):
                                 order['fills'][0]['price'],
                                 order['fills'][0]['commission']
                         )
-                        logger(message,'Green',True)
+                        logger(message,'green',True)
                         in_position = False
                     except Exception as e:
-                        logger(f'Transaction could not be completed','cyan',True)
-                        logger(e)
+                        logger(f'Transaction could not be completed, Error: {e}'','cyan',True)
                 else:
                     logger('It is overbought, but you already own it. Nothing to do')
 
@@ -75,7 +77,7 @@ def on_message(ws,message):
                         logger('Overbought! Buy! Buy!','red')
                         logger('Sending order','red')
                         order = client.buy_market(TRADE_SYMBOL,TRADE_QUANTITY)
-                        message = 'Sym: %s  OrderID: %s  QTY: %.5s  '\
+                        message = 'BUY> Sym: %s  OrderID: %s  QTY: %.5s  '\
                                 'Price: %.7s  Commission: %.6s'% (
                                 order['symbol'], 
                                 order['orderId'],
@@ -86,8 +88,7 @@ def on_message(ws,message):
                         logger(message,'red',True)
                         in_position = True
                     except Exception as e:
-                        logger(f'Transaction could not be completed','cyan',True)
-                        logger(e)
+                        logger(f'Transaction could not be completed, Error: {e}','cyan',True)
         
         else:
             logger(f'Closes size: {len(closes)}, Retrivering data...')
@@ -106,7 +107,6 @@ if __name__ == '__main__':
         ws.run_forever()
     except KeyboardInterrupt:
         logger('Bot finished by user','cyan',True)
-        logger('Finished.')
     except Exception as err:
         logger(f'Bot finished with error: {err}','cyan',True)
     finally:

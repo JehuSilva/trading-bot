@@ -65,7 +65,7 @@ def on_message(ws,message):
                         logger(message,'green',True)
                         in_position = False
                     except Exception as e:
-                        logger(f'Transaction could not be completed, Error: {e}'','cyan',True)
+                        logger(f'Transaction could not be completed, Error: {e}','cyan',True)
                 else:
                     logger('It is overbought, but you already own it. Nothing to do')
 

@@ -15,7 +15,8 @@ TRADE_QUANTITY = 0.03
 SOCKET = 'wss://stream.binance.com:9443/ws/ethusdt@kline_1m'
 
 closes = []
-in_position = False
+in_position = True
+
 client=BinanceAPI(BINANCE['key'],BINANCE['secret'])
 
 def on_open(ws):
@@ -54,13 +55,13 @@ def on_message(ws,message):
                         logger('Overbought! Sell! Sell!','green')
                         logger('Sending order','green')
                         order = client.sell_market(TRADE_SYMBOL,TRADE_QUANTITY)
-                        message = 'SELL> Sym: %s  OrderID: %s  QTY: %.5s  '\
-                                'Price: %.7s  Commission: %.6s'% (
+                        message = 'SELL %s  Price: %.7s  QTY: %.5s  '\
+                                'Commission: %.4s  OrderID: %s '% (
                                 order['symbol'], 
-                                order['orderId'],
+				order['fills'][0]['price'],
                                 order['executedQty'],
-                                order['fills'][0]['price'],
-                                order['fills'][0]['commission']
+                                order['fills'][0]['commission'],
+				order['orderId']
                         )
                         logger(message,'green',True)
                         in_position = False
@@ -77,13 +78,13 @@ def on_message(ws,message):
                         logger('Overbought! Buy! Buy!','red')
                         logger('Sending order','red')
                         order = client.buy_market(TRADE_SYMBOL,TRADE_QUANTITY)
-                        message = 'BUY> Sym: %s  OrderID: %s  QTY: %.5s  '\
-                                'Price: %.7s  Commission: %.6s'% (
+                        message = 'BUY %s  Price: %.7s  QTY: %.5s  '\
+                                'Commission: %.4s  OrderID: %s '% (
                                 order['symbol'], 
-                                order['orderId'],
-                                order['executedQty'],
                                 order['fills'][0]['price'],
-                                order['fills'][0]['commission']
+                                order['executedQty'],
+                                order['fills'][0]['commission'],
+                                order['orderId'] 
                         )
                         logger(message,'red',True)
                         in_position = True

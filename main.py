@@ -75,7 +75,7 @@ def on_message(ws,message):
                     logger('It is oversold, but you already own it. Nothing to do.')
                 else:
                     try:
-                        logger('Overbought! Buy! Buy!','red')
+                        logger('Overbought! Buy!','red')
                         logger('Sending order','red')
                         order = client.buy_market(TRADE_SYMBOL,TRADE_QUANTITY)
                         message = 'BUY %s  Price: %.7s  QTY: %.5s  '\

@@ -1,26 +1,24 @@
 import os
 
-PRODUCTION = 'production'
-DEVELOPMENT = 'development'
 
-COIN_TARGET = 'BTC'
-COIN_REFER = 'USDT'
+class Config:
+    COIN_TARGET = 'BTC'
+    COIN_REFER = 'USDT'
 
-ENV = os.getenv('ENVIRONMENT', PRODUCTION)
-DEBUG = True
+    # recvWindow should less than 60000
+    recv_window = 5000
+
 
 BINANCE = {
-  'key': '',
-  'secret': ''
+    'key': 'TqrQVAN8EBQzJmpPzmNPO93KgWPRbyobF2GjXhYWGBTef722caoR2alGGeiTZmtk',
+    'secret': 'fIzotblfE6m8RLPWn65PAYCcGpokUBoDVi3rVQy50E3bgDqhzIxE2QEYl8Kl9Z2E'
 }
-
 TELEGRAM = {
-  'channel': '',
-  'bot': ''
+    'channel': '-1001519367131',
+    'bot': '1635215508:AAEyC0Kj0uSxu8TlIR90GXCBnmsegd1jP0U'
 }
 
-# recvWindow should less than 60000
-recv_window = 5000
 
-
+DEBUG = True
+ENV = os.getenv('ENV', 'development')
 print('ENV = ', ENV)

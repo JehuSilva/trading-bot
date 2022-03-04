@@ -10,12 +10,12 @@ class Config:
 
 
 BINANCE = {
-    'key': 'TqrQVAN8EBQzJmpPzmNPO93KgWPRbyobF2GjXhYWGBTef722caoR2alGGeiTZmtk',
-    'secret': 'fIzotblfE6m8RLPWn65PAYCcGpokUBoDVi3rVQy50E3bgDqhzIxE2QEYl8Kl9Z2E'
+    'key': os.environ['BINANCE_KEY'],
+    'secret': os.environ['BINANCE_SECRET'],
 }
 TELEGRAM = {
-    'channel': '-1001519367131',
-    'bot': '1635215508:AAEyC0Kj0uSxu8TlIR90GXCBnmsegd1jP0U'
+    'channel': os.environ['TELEGRAM_CHANNEL'],
+    'bot': os.environ['TELEGRAM_BOT'],
 }
 
 

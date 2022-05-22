@@ -2,43 +2,45 @@ import time
 import hashlib
 import requests
 import hmac
-import config
+import bot.config as config
 
 try:
     from urllib import urlencode
 # python3
 except ImportError:
     from urllib.parse import urlencode
- 
+
+
 class BinanceAPI:
-    
+
     BASE_URL = 'https://www.binance.com/api/v1'
     BASE_URL_V3 = 'https://api.binance.com/api/v3'
     PUBLIC_URL = 'https://www.binance.com/exchange/public/product'
 
-    def __init__(self, key, secret):
-        self.key = key
-        self.secret = secret
+    def __init__(self, binance_key: str, binance_secret: str) -> None:
+        self.key = binance_key
+        self.secret = binance_secret
 
     def ping(self):
         path = '%s/ping' % self.BASE_URL_V3
         return requests.get(path, timeout=30, verify=True).json()
-    
+
     def get_history(self, market, limit=50):
         path = '%s/historicalTrades' % self.BASE_URL
         params = {'symbol': market, 'limit': limit}
         return self._get_no_sign(path, params)
-        
+
     def get_trades(self, market, limit=50):
         path = '%s/trades' % self.BASE_URL
         params = {'symbol': market, 'limit': limit}
         return self._get_no_sign(path, params)
-        
+
     def get_klines(self, market, interval, startTime, endTime):
         path = '%s/klines' % self.BASE_URL_V3
-        params = {'symbol': market, 'interval':interval, 'startTime':startTime, 'endTime':endTime}
+        params = {'symbol': market, 'interval': interval,
+                  'startTime': startTime, 'endTime': endTime}
         return self._get_no_sign(path, params)
-        
+
     def get_ticker(self, market):
         path = '%s/ticker/24hr' % self.BASE_URL
         params = {'symbol': market}
@@ -55,21 +57,21 @@ class BinanceAPI:
 
     def get_products(self):
         return requests.get(self.PUBLIC_URL, timeout=30, verify=True).json()
-   
+
     def get_server_time(self):
         path = '%s/time' % self.BASE_URL_V3
         return requests.get(path, timeout=30, verify=True).json()
-    
+
     def get_exchange_info(self):
         path = '%s/exchangeInfo' % self.BASE_URL
         return requests.get(path, timeout=30, verify=True).json()
 
-    def get_open_orders(self, market, limit = 100):
+    def get_open_orders(self, market, limit=100):
         path = '%s/openOrders' % self.BASE_URL_V3
         params = {'symbol': market}
         return self._get(path, params)
-    
-    def get_my_trades(self, market, limit = 50):
+
+    def get_my_trades(self, market, limit=50):
         path = '%s/myTrades' % self.BASE_URL_V3
         params = {'symbol': market, 'limit': limit}
         return self._get(path, params)
@@ -108,7 +110,7 @@ class BinanceAPI:
         query = urlencode(params)
         url = '%s?%s' % (path, query)
         return requests.get(url, timeout=30, verify=True).json()
-    
+
     def _sign(self, params={}):
         data = params.copy()
 
@@ -117,14 +119,14 @@ class BinanceAPI:
         h = urlencode(data)
         b = bytearray()
         b.extend(self.secret.encode())
-        signature = hmac.new(b, msg=h.encode('utf-8'), digestmod=hashlib.sha256).hexdigest()
+        signature = hmac.new(b, msg=h.encode('utf-8'),
+                             digestmod=hashlib.sha256).hexdigest()
         data.update({'signature': signature})
         return data
 
-
     def _order(self, market, quantity, side, rate=None):
         params = {}
-         
+
         if rate is not None:
             params['type'] = 'LIMIT'
             params['price'] = self._format(rate)
@@ -136,16 +138,16 @@ class BinanceAPI:
         params['side'] = side
         params['quantity'] = quantity
         #params['quantity'] =  '%.8f' % quantity
-        
+
         return params
-           
+
     def _delete(self, path, params={}):
         params.update({'recvWindow': config.recv_window})
         query = urlencode(self._sign(params))
         url = '%s?%s' % (path, query)
         header = {'X-MBX-APIKEY': self.key}
-        return requests.delete(url, headers=header, \
-            timeout=30, verify=True).json()
+        return requests.delete(url, headers=header,
+                               timeout=30, verify=True).json()
 
     def _format(self, price):
         return '{:.8f}'.format(price)
@@ -155,13 +157,13 @@ class BinanceAPI:
         query = urlencode(self._sign(params))
         url = '%s?%s' % (path, query)
         header = {'X-MBX-APIKEY': self.key}
-        return requests.get(url, headers=header, \
-            timeout=30, verify=True).json()
+        return requests.get(url, headers=header,
+                            timeout=30, verify=True).json()
 
     def _post(self, path, params={}):
         params.update({'recvWindow': config.recv_window})
         query = urlencode(self._sign(params))
         url = '%s' % (path)
         header = {'X-MBX-APIKEY': self.key}
-        return requests.post(url, headers=header, data=query, \
-            timeout=30, verify=True).json()
+        return requests.post(url, headers=header, data=query,
+                             timeout=30, verify=True).json()

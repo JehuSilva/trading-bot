@@ -1,5 +1,5 @@
-from app.BinanceAPI import BinanceAPI
-from config import BINANCE
+from bot.BinanceAPI import BinanceAPI
+from bot.config import BINANCE
 client=BinanceAPI(BINANCE.key,BINANCE.secret)
 
 class Messages():

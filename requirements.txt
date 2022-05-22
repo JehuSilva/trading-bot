@@ -1,5 +1,8 @@
+# TA-Lib==0.4.19
+# termcolor==1.1.0
+# numpy==1.20.0
 requests
-TA-Lib==0.4.19
-numpy==1.20.0
+TA-Lib
+numpy
 websocket_client
-termcolor==1.1.0
+termcolor

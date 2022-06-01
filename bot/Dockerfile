@@ -15,10 +15,10 @@ RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
     cd ta-lib/ && \
     ./configure --prefix=/usr && \
     make && \
-    make install && \
+    make install
 
-    # Set up the project directory
-    WORKDIR /opt/app/
+# Set up the project directory
+WORKDIR /opt/app/
 
 # Install python packages
 COPY requirements.txt /opt/app/

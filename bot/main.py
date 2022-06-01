@@ -1,11 +1,23 @@
-from bot.binance.api import BinanceAPI
-from bot.common.utils import logger
-import numpy as np
-import websocket
-import json
+'''
+Trading bot
+-------------------------------------------------------------------------
+This application uses the Binance API to retrieve the latest price of a
+specified symbol and then uses the TALIB library to calculate the RSI
+value. If the RSI value is overbought, the application will buy the
+specified symbol. If the RSI value is oversold, the application will sell
+the specified symbol.
+'''
 
-import talib
+# Basic packages
 import os
+import json
+import talib
+import websocket
+import numpy as np
+
+# Custom packages
+from common.utils import logger
+from binance.api import BinanceAPI
 
 environment = os.getenv('ENVIRONMENT')
 binance_key = os.getenv('BINANCE_KEY')

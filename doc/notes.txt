@@ -1,0 +1,1 @@
+Ta-Lib Instalation details here: https://github.com/mrjbq7/ta-lib

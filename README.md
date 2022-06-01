@@ -24,11 +24,11 @@ git clone git@github.com:JehuSilva/trading-bot.git
 ```
 2. Create the docker image
 ```bash
-docker build -t tradingbot .
+docker build -t backtrader .
 ```
 3. Run the application in the background
 ```bash
-docker run -d --name backtrader-bot --env-file .env tradingbot:latest
+docker run -d --name backtrader-bot --env-file .env backtrader:latest
 ```
 4. Run this command in order to see the logs
 ```bash

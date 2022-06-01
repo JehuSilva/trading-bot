@@ -6,8 +6,6 @@ FROM python:3.10
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Upgrading pip 
-RUN python3 -m pip install --upgrade pip
 
 # Installing 
 RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
@@ -16,6 +14,9 @@ RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
     ./configure --prefix=/usr && \
     make && \
     make install
+
+# Upgrading pip 
+RUN python3 -m pip install --upgrade pip
 
 # Set up the project directory
 WORKDIR /opt/app/
@@ -26,6 +27,7 @@ RUN pip3 install -r requirements.txt
 
 COPY . /opt/app/
 
-CMD ["python","main.py"]
+
+CMD ["python3","main.py"]
 
 

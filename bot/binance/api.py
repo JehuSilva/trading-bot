@@ -2,7 +2,6 @@ import time
 import hashlib
 import requests
 import hmac
-import bot.config as config
 
 try:
     from urllib import urlencode
@@ -17,9 +16,10 @@ class BinanceAPI:
     BASE_URL_V3 = 'https://api.binance.com/api/v3'
     PUBLIC_URL = 'https://www.binance.com/exchange/public/product'
 
-    def __init__(self, binance_key: str, binance_secret: str) -> None:
+    def __init__(self, binance_key: str, binance_secret: str, recv_window: int = 5000) -> None:
         self.key = binance_key
         self.secret = binance_secret
+        self.recv_window = recv_window
 
     def ping(self):
         path = '%s/ping' % self.BASE_URL_V3
@@ -142,7 +142,7 @@ class BinanceAPI:
         return params
 
     def _delete(self, path, params={}):
-        params.update({'recvWindow': config.recv_window})
+        params.update({'recvWindow': self.recv_window})
         query = urlencode(self._sign(params))
         url = '%s?%s' % (path, query)
         header = {'X-MBX-APIKEY': self.key}
@@ -153,7 +153,7 @@ class BinanceAPI:
         return '{:.8f}'.format(price)
 
     def _get(self, path, params={}):
-        params.update({'recvWindow': config.recv_window})
+        params.update({'recvWindow': self.recv_window})
         query = urlencode(self._sign(params))
         url = '%s?%s' % (path, query)
         header = {'X-MBX-APIKEY': self.key}
@@ -161,7 +161,7 @@ class BinanceAPI:
                             timeout=30, verify=True).json()
 
     def _post(self, path, params={}):
-        params.update({'recvWindow': config.recv_window})
+        params.update({'recvWindow': self.recv_window})
         query = urlencode(self._sign(params))
         url = '%s' % (path)
         header = {'X-MBX-APIKEY': self.key}

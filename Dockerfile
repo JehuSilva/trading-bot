@@ -1,22 +1,31 @@
-FROM python:3.8
+# syntax=docker/dockerfile:1
+# Python base
+FROM python:3.10
+
+# Ensure logging is set up correctly
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Upgrading pip 
+RUN python3 -m pip install --upgrade pip
+
+# Installing 
 RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
-  tar -xvzf ta-lib-0.4.0-src.tar.gz && \
-  cd ta-lib/ && \
-  ./configure --prefix=/usr && \
-  make && \
-  make install
-RUN rm -R ta-lib ta-lib-0.4.0-src.tar.gz
-# copy the dependencies file to the working directory
-COPY  requirements.txt  /requirements.txt
-# install dependencies
-RUN pip install -r requirements.txt
+    tar -xzf ta-lib-0.4.0-src.tar.gz && \
+    cd ta-lib/ && \
+    ./configure --prefix=/usr && \
+    make && \
+    make install && \
 
-# copy the content of the local src directory to the working directory
-COPY . .
+    # Set up the project directory
+    WORKDIR /opt/app/
 
-# WORKDIR /app
-# ADD requirements.txt .
-# RUN pip install -r requirements.txt
+# Install python packages
+COPY requirements.txt /opt/app/
+RUN pip3 install -r requirements.txt
+
+COPY . /opt/app/
+
 CMD ["python","main.py"]
 
 

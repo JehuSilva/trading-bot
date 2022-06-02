@@ -16,29 +16,19 @@ import websocket
 import numpy as np
 
 # Custom packages
+from config import config
 from common.utils import logger
 from binance.api import BinanceAPI
 from common.telegram import TelegramBot
+from common.strategy import Strategy
 
-environment = os.getenv('ENVIRONMENT')
-binance_key = os.getenv('BINANCE_KEY')
-binance_secret = os.getenv('BINANCE_SECRET')
-telegram_channel = os.getenv('TELEGRAM_CHANNEL')
-telegram_bot = os.getenv('TELEGRAM_BOT')
-
-
-RSI_PERIOD = 14
-RSI_OVERSOLD = 30
-RSI_OVERBOUGHT = 70
-TRADE_SYMBOL = 'ETHUSDT'
-TRADE_QUANTITY = 0.03
-SOCKET = 'wss://stream.binance.com:9443/ws/ethusdt@kline_1m'
 
 closes = []
 in_position = True
 
-client = BinanceAPI(binance_key, binance_secret)
-telegram = TelegramBot(telegram_bot, telegram_channel)
+strategy = Strategy(config=config)
+binance = BinanceAPI(config=config)
+telegram = TelegramBot(config=config)
 
 
 def on_open(ws):
@@ -60,93 +50,68 @@ def on_message(ws, message):
 
     if is_candle_close:
         closes.append(float(close))
-        if len(closes) > RSI_PERIOD:
-
-            np_closes = np.array(closes)
-            rsi = talib.RSI(np_closes, RSI_PERIOD)
-            last_rsi = rsi[-1]
-            message = 'Sym: %s  Close: %0.6s  RSI: %0.6s' % (
-                TRADE_SYMBOL,
-                close,
-                last_rsi
+        if len(closes) > config.RSI_PERIOD:
+            last_rsi, action = strategy.get_trade_recommendation(closes)
+            message = 'Symbol: %s  Close: %0.6s  RSI: %0.6s' % (
+                config.TRADE_SYMBOL, close, last_rsi
             )
-            logger(message)
-            telegram.send_message(message)
+            if action in ['SELL', 'BUY']:
+                logger(f'{action} {config.TRADE_SYMBOL}')
 
-            if last_rsi > RSI_OVERBOUGHT:
-                if in_position:
-                    try:
-                        logger('Overbought! Sell! Sell!', 'green')
-                        logger('Sending order', 'green')
-                        telegram.send_message('Selling...')
-                        order = client.sell_market(
-                            TRADE_SYMBOL, TRADE_QUANTITY)
-                        message = 'SELL %s  Price: %.7s  QTY: %.5s  '\
-                            'Commission: %.4s  OrderID: %s ' % (
-                                order['symbol'],
-                                order['fills'][0]['price'],
-                                order['executedQty'],
-                                order['fills'][0]['commission'],
-                                order['orderId']
-                            )
-                        logger(message, 'green', True)
-                        telegram.send_message(message)
-                        in_position = False
-                    except Exception as e:
-                        message = f'Transaction could not be completed, Error: {e}'
-                        logger(message, 'cyan', True)
-                        telegram.send_message(message)
+                try:
+                    if action == 'SELL':
+                        order = binance.sell(
+                            symbol=config.TRADE_SYMBOL,
+                            quantity=config.TRADE_QUANTITY
+                        )
+                    elif action == 'BUY':
+                        order = binance.buy(
+                            symbol=config.TRADE_SYMBOL,
+                            quantity=config.TRADE_QUANTITY
+                        )
+                    logger(
+                        '%s %s \n'
+                        'Price: %.7s \n'
+                        'QTY: %.5s \n'
+                        'Commission: %.4s \n'
+                        'OrderID: %s' % (
+                            action,
+                            order['symbol'],
+                            order['fills'][0]['price'],
+                            order['executedQty'],
+                            order['fills'][0]['commission'],
+                            order['orderId']
+                        )
+                    )
+                    telegram.send_message()
+                except Exception as e:
+                    logger(
+                        text='Couldn\'t place order: %s' % e, color='red'
+                    )
 
-                else:
-                    message = 'It is overbought, but you already own it. Nothing to do'
-                    logger(message)
-                    telegram.send_message(message)
-
-            if last_rsi < RSI_OVERSOLD:
-                if in_position:
-                    message = 'It is oversold, but you already own it. Nothing to do.'
-                    logger(message)
-                    telegram.send_message(message)
-                else:
-                    try:
-                        logger('Overbought! Buy!', 'red')
-                        logger('Sending order', 'red')
-                        telegram.send_message('Buying...')
-                        order = client.buy_market(TRADE_SYMBOL, TRADE_QUANTITY)
-                        message = 'BUY %s  Price: %.7s  QTY: %.5s  '\
-                            'Commission: %.4s  OrderID: %s ' % (
-                                order['symbol'],
-                                order['fills'][0]['price'],
-                                order['executedQty'],
-                                order['fills'][0]['commission'],
-                                order['orderId']
-                            )
-                        logger(message, 'red', True)
-                        telegram.send_message(message)
-                        in_position = True
-                    except Exception as e:
-                        message = f'Transaction could not be completed, Error: {e}'
-                        logger(message, 'cyan', True)
+            else:
+                logger(f'{action} {config.RADE_SYMBOL}')
 
         else:
-            logger(f'Closes size: {len(closes)}, Retrivering data...')
+            logger('Not enough data, Waiting...')
 
 
 if __name__ == '__main__':
     try:
-        logger('Starting trading ', 'cyan', True)
+        logger('Starting trading ', 'cyan')
         telegram.send_message('Everything set. Let\'s trade!')
         ws = websocket.WebSocketApp(
-            SOCKET,
+            config.SOCKET,
             on_open=on_open,
             on_close=on_close,
             on_message=on_message
         )
         ws.run_forever()
     except KeyboardInterrupt:
-        logger('Bot finished by user', 'cyan', True)
+        logger('Bot finished by user', 'cyan')
     except Exception as err:
-        logger(f'Bot finished with error: {err}', 'cyan', True)
+        logger(f'Bot finished with error: {err}', 'cyan')
         telegram.send_message(f'Bot finished with error: {err}')
     finally:
-        logger('Bot finished', 'cyan', True)
+        logger('Bot stopped', 'cyan')
+        telegram.send_message('Bot stopped!')

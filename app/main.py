@@ -55,6 +55,7 @@ def on_message(ws, message):
             message = 'Symbol: %s  Close: %0.6s  RSI: %0.6s' % (
                 config.TRADE_SYMBOL, close, last_rsi
             )
+            logger(message)
             if action in ['SELL', 'BUY']:
                 logger(f'{action} {config.TRADE_SYMBOL}')
 

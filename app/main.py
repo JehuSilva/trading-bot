@@ -91,8 +91,8 @@ def on_message(ws, message):
                         text='Couldn\'t place order: %s' % e, color='red'
                     )
 
-            else:
-                logger(f'{action} {config.TRADE_SYMBOL}')
+            # else:
+            #     logger(f'{action} {config.TRADE_SYMBOL}')
 
         else:
             logger('Not enough data, Waiting...')

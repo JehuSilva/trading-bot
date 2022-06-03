@@ -85,7 +85,12 @@ class BinanceAPI:
         Get current account information.
         '''
         path = '%s/account' % self.BASE_URL_V3
-        return self._get(path, {})
+        _account = self._get(path, {})
+        # Sorting the balances by asset quantity
+        _account['balances'] = sorted(
+            _account['balances'], key=lambda x: x['free'], reverse=True
+        )[0:5]
+        return _account
 
     def get_products(self):
         '''

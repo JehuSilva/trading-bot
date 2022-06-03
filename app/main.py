@@ -24,7 +24,6 @@ from common.strategy import Strategy
 
 
 closes = []
-in_position = True
 
 strategy = Strategy(config=config)
 binance = BinanceAPI(config=config)
@@ -41,7 +40,6 @@ def on_close(ws):
 
 def on_message(ws, message):
     global closes
-    global in_position
 
     message = json.loads(message)
     candle = message['k']
@@ -52,10 +50,10 @@ def on_message(ws, message):
         closes.append(float(close))
         if len(closes) > config.RSI_PERIOD:
             last_rsi, action = strategy.get_trade_recommendation(closes)
-            message = 'Symbol: %s  Close: %0.6s  RSI: %0.6s' % (
+            close_message = 'Symbol: %s  Close: %0.6s  RSI: %0.6s' % (
                 config.TRADE_SYMBOL, close, last_rsi
             )
-            logger(message)
+            logger(close_message)
             if action in ['SELL', 'BUY']:
                 logger(f'{action} {config.TRADE_SYMBOL}')
 
@@ -65,17 +63,19 @@ def on_message(ws, message):
                             symbol=config.TRADE_SYMBOL,
                             quantity=config.TRADE_QUANTITY
                         )
+                        strategy.change_position(position=False)
                     elif action == 'BUY':
                         order = binance.buy(
                             symbol=config.TRADE_SYMBOL,
                             quantity=config.TRADE_QUANTITY
                         )
-                    logger(
+                        strategy.change_position(position=True)
+                    order_message = (
                         '%s %s \n'
-                        'Price: %.7s \n'
-                        'QTY: %.5s \n'
-                        'Commission: %.4s \n'
-                        'OrderID: %s' % (
+                        'Price: %.6s \n'
+                        'Qty: %.6s \n'
+                        'Commission: %.6s \n'
+                        'Order ID: %s' % (
                             action,
                             order['symbol'],
                             order['fills'][0]['price'],
@@ -84,14 +84,15 @@ def on_message(ws, message):
                             order['orderId']
                         )
                     )
-                    telegram.send_message()
+                    logger(order_message, color='green')
+                    telegram.send_message(message=order_message)
                 except Exception as e:
                     logger(
                         text='Couldn\'t place order: %s' % e, color='red'
                     )
 
             else:
-                logger(f'{action} {config.RADE_SYMBOL}')
+                logger(f'{action} {config.TRADE_SYMBOL}')
 
         else:
             logger('Not enough data, Waiting...')
@@ -99,8 +100,16 @@ def on_message(ws, message):
 
 if __name__ == '__main__':
     try:
-        logger('Starting trading ', 'cyan')
-        telegram.send_message('Everything set. Let\'s trade!')
+        assets = [
+            '%s: %.7s' % (a['asset'], a['free'])
+            for a in binance.get_account()['balances']
+        ]
+        message = 'Everything set. Let\'s trade!\nCurrent balances:\n' + \
+            '\n'.join(assets)
+        logger(message, color='cyan')
+        telegram.send_message(message=message)
+        strategy.set_quantities(assets)
+
         ws = websocket.WebSocketApp(
             config.SOCKET,
             on_open=on_open,
@@ -110,6 +119,7 @@ if __name__ == '__main__':
         ws.run_forever()
     except KeyboardInterrupt:
         logger('Bot finished by user', 'cyan')
+        telegram.send_message(f'Bot finished by the user')
     except Exception as err:
         logger(f'Bot finished with error: {err}', 'cyan')
         telegram.send_message(f'Bot finished with error: {err}')

@@ -34,6 +34,12 @@ class Strategy():
         self.socket = config.SOCKET
         self.in_position = True
 
+    def set_quantities():
+        '''
+        It sets the quantity to trade
+        '''
+        pass
+
     def get_trade_recommendation(self, closes: list) -> tuple:
         '''
         It calculates the RSI value and return a recommendation
@@ -50,12 +56,19 @@ class Strategy():
         '''
         rsi = talib.RSI(np.array(closes), self.rsi_period)
         last_rsi = rsi[-1]
-        if last_rsi >= self.rsi_overbought:
-            if self.in_position:
-                self.in_position = False
-                return 'SELL'
-        elif last_rsi <= self.rsi_oversold:
-            if not self.in_position:
-                self.in_position = True
-                return 'BUY'
+        if (last_rsi >= self.rsi_overbought) and self.in_position:
+            return 'SELL'
+        elif (last_rsi <= self.rsi_oversold) and not self.in_position:
+            return 'BUY'
         return (last_rsi, 'HOLD')
+
+    def change_position(self, position):
+        '''
+        It changes the position of the robot
+
+        Parameters
+        ----------
+        position : str
+            The new position
+        '''
+        self.in_position = position

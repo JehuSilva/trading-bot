@@ -34,10 +34,11 @@ class Strategy():
         self.socket = config.SOCKET
         self.in_position = True
 
-    def set_quantities():
+    def set_quantities(self, assets):
         '''
         It sets the quantity to trade
         '''
+        # TODO: Implement this method
         pass
 
     def get_trade_recommendation(self, closes: list) -> tuple:

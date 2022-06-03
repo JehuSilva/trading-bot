@@ -15,9 +15,9 @@ class Config():
     RSI_OVERSOLD = 30
     RSI_OVERBOUGHT = 70
     TRADE_SYMBOL = 'ETHUSDT'
-    TRADE_QUANTITY = 0.03
+    TRADE_QUANTITY = 0.013
     SOCKET = 'wss://stream.binance.com:9443/ws/ethusdt@kline_1m'
-    RECV_WINDOW = 100
+    RECV_WINDOW = 5000
 
 
 class Development(Config):

@@ -12,8 +12,8 @@ class Config():
     General configuration    
     '''
     RSI_PERIOD = 14
-    RSI_OVERSOLD = 30
-    RSI_OVERBOUGHT = 70
+    RSI_OVERSOLD = 33
+    RSI_OVERBOUGHT = 63
     TRADE_SYMBOL = 'ETHUSDT'
     TRADE_QUANTITY = 0.013
     SOCKET = 'wss://stream.binance.com:9443/ws/ethusdt@kline_1m'

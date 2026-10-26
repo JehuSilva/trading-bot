@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trading Bot</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/vendor/lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">◆</span>
+      <div>
+        <h1>Trading Bot</h1>
+        <p class="subtitle">Modo pruebas · dinero virtual</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="live" role="tab" aria-selected="true">En vivo</button>
+      <button class="tab" data-tab="backtest" role="tab" aria-selected="false">Backtest</button>
+    </nav>
+  </header>
+
+  <!-- ================================================================ LIVE -->
+  <main id="tab-live" class="tab-panel">
+    <section class="statusbar">
+      <div class="market">
+        <span id="live-symbol" class="symbol">—</span>
+        <span id="live-interval" class="chip">—</span>
+        <span id="live-source" class="chip">—</span>
+      </div>
+      <div class="price-box">
+        <span id="live-price" class="price">—</span>
+        <span id="live-status" class="status status-stopped">Detenido</span>
+      </div>
+    </section>
+    <p id="live-error" class="error" hidden></p>
+
+    <section class="kpis" id="live-kpis"></section>
+
+    <div class="layout">
+      <div class="charts">
+        <div class="card chart-card">
+          <div class="card-head">
+            <h2>Precio</h2>
+            <span id="live-strategy-label" class="muted"></span>
+          </div>
+          <div id="live-price-chart" class="chart chart-price"></div>
+          <div id="live-ind-chart" class="chart chart-ind" hidden></div>
+        </div>
+        <div class="card chart-card">
+          <div class="card-head"><h2>Capital</h2></div>
+          <div id="live-equity-chart" class="chart chart-equity"></div>
+        </div>
+      </div>
+
+      <aside class="side">
+        <div class="card">
+          <div class="card-head"><h2>Posición</h2></div>
+          <dl class="position" id="live-position"></dl>
+        </div>
+
+        <form class="card form" id="live-form">
+          <div class="card-head"><h2>Estrategia</h2></div>
+          <label>Estrategia
+            <select name="strategy" class="strategy-select"></select>
+          </label>
+          <p class="hint strategy-desc"></p>
+          <div class="params"></div>
+          <fieldset class="risk">
+            <legend>Gestión de riesgo</legend>
+            <label>Tamaño de posición (%)
+              <input type="number" name="position_size" min="1" max="100" step="1" value="100">
+            </label>
+            <label>Stop loss (%)
+              <input type="number" name="stop_loss_pct" min="0" step="0.1" value="0">
+            </label>
+            <label>Take profit (%)
+              <input type="number" name="take_profit_pct" min="0" step="0.1" value="0">
+            </label>
+            <p class="hint">0 = desactivado</p>
+          </fieldset>
+          <button type="submit" class="btn primary">Aplicar y reiniciar</button>
+          <p class="hint">Reiniciar pone la cuenta virtual a cero.</p>
+          <p class="form-error error" hidden></p>
+        </form>
+      </aside>
+    </div>
+
+    <section class="card">
+      <div class="card-head"><h2>Órdenes simuladas</h2><span id="live-fill-count" class="muted"></span></div>
+      <div class="table-wrap"><table id="live-fills"></table></div>
+    </section>
+  </main>
+
+  <!-- ============================================================ BACKTEST -->
+  <main id="tab-backtest" class="tab-panel" hidden>
+    <div class="layout">
+      <div class="charts">
+        <div id="bt-empty" class="card empty">
+          <h2>Prueba una estrategia con datos históricos</h2>
+          <p>Elige la estrategia y el periodo a la derecha y pulsa <strong>Ejecutar</strong>.
+             El resultado usa el mismo motor que el modo en vivo, con comisiones y deslizamiento incluidos.</p>
+        </div>
+        <div id="bt-results" hidden>
+          <p id="bt-summary" class="muted"></p>
+          <section class="kpis" id="bt-kpis"></section>
+          <div class="card chart-card">
+            <div class="card-head"><h2>Precio</h2></div>
+            <div id="bt-price-chart" class="chart chart-price"></div>
+            <div id="bt-ind-chart" class="chart chart-ind" hidden></div>
+          </div>
+          <div class="card chart-card">
+            <div class="card-head"><h2>Capital</h2></div>
+            <div id="bt-equity-chart" class="chart chart-equity"></div>
+          </div>
+          <section class="card">
+            <div class="card-head"><h2>Operaciones cerradas</h2><span id="bt-trade-count" class="muted"></span></div>
+            <div class="table-wrap"><table id="bt-trades"></table></div>
+          </section>
+        </div>
+      </div>
+
+      <aside class="side">
+        <form class="card form" id="bt-form">
+          <div class="card-head"><h2>Backtest</h2></div>
+          <label>Estrategia
+            <select name="strategy" class="strategy-select"></select>
+          </label>
+          <p class="hint strategy-desc"></p>
+          <div class="params"></div>
+          <div class="row">
+            <label>Par
+              <input type="text" name="symbol" value="ETHUSDT" autocomplete="off" spellcheck="false">
+            </label>
+            <label>Intervalo
+              <select name="interval">
+                <option>1m</option><option>5m</option><option>15m</option><option>30m</option>
+                <option selected>1h</option><option>4h</option><option>1d</option>
+              </select>
+            </label>
+          </div>
+          <div class="row">
+            <label>Días
+              <input type="number" name="days" min="1" max="1000" step="1" value="60">
+            </label>
+            <label>Capital inicial
+              <input type="number" name="initial_cash" min="10" step="10" value="1000">
+            </label>
+          </div>
+          <fieldset class="risk">
+            <legend>Gestión de riesgo</legend>
+            <label>Tamaño de posición (%)
+              <input type="number" name="position_size" min="1" max="100" step="1" value="100">
+            </label>
+            <label>Stop loss (%)
+              <input type="number" name="stop_loss_pct" min="0" step="0.1" value="0">
+            </label>
+            <label>Take profit (%)
+              <input type="number" name="take_profit_pct" min="0" step="0.1" value="0">
+            </label>
+            <p class="hint">0 = desactivado</p>
+          </fieldset>
+          <button type="submit" class="btn primary">Ejecutar</button>
+          <p class="form-error error" hidden></p>
+        </form>
+      </aside>
+    </div>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

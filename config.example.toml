@@ -1,0 +1,38 @@
+# Copia este archivo a config.toml y ajústalo:
+#   cp config.example.toml config.toml
+#   python -m tradingbot -c config.toml serve
+
+[market]
+# binance   = precios reales en tiempo real (públicos, no hace falta cuenta)
+# synthetic = precios aleatorios, para probar sin internet
+# csv       = archivo propio de velas (solo backtest)
+source = "binance"
+symbol = "ETHUSDT"
+interval = "1m"          # 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 12h, 1d
+warmup_candles = 500     # velas históricas para preparar los indicadores al arrancar
+# Si api.binance.com está bloqueado en tu país, usa los servidores de solo datos:
+# rest_url = "https://data-api.binance.vision"
+# ws_url = "wss://data-stream.binance.vision"
+# csv_path = "data/mis_velas.csv"
+
+[strategy]
+name = "rsi"             # rsi | ma_cross | bollinger  (python -m tradingbot strategies)
+
+[strategy.params]
+period = 14
+oversold = 30
+overbought = 70
+
+[paper]
+initial_cash = 1000.0    # dinero virtual en la moneda de cotización (USDT)
+fee_rate = 0.001         # 0,1 % por operación (comisión estándar de Binance)
+slippage = 0.0005        # 0,05 % de deslizamiento simulado
+
+[risk]
+position_size = 1.0      # fracción del efectivo usada en cada compra (1.0 = todo)
+stop_loss_pct = 0        # 0 = desactivado
+take_profit_pct = 0      # 0 = desactivado
+
+[server]
+host = "127.0.0.1"
+port = 8000

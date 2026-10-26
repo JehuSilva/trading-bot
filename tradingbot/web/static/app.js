@@ -450,7 +450,24 @@ function applyLiveEvent(ev) {
 $("#live-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const form = e.currentTarget;
-  if (!confirm("Se reiniciará la cuenta virtual con la nueva estrategia. ¿Continuar?")) return;
+  // Two-step confirmation inside the page (browser dialogs can be blocked).
+  const btn = $("button[type=submit]", form);
+  if (form.dataset.armed !== "1") {
+    form.dataset.armed = "1";
+    btn.textContent = "Confirmar: reinicia la cuenta";
+    btn.classList.add("danger");
+    clearTimeout(form._disarm);
+    form._disarm = setTimeout(() => {
+      form.dataset.armed = "";
+      btn.textContent = "Aplicar y reiniciar";
+      btn.classList.remove("danger");
+    }, 5000);
+    return;
+  }
+  clearTimeout(form._disarm);
+  form.dataset.armed = "";
+  btn.textContent = "Aplicar y reiniciar";
+  btn.classList.remove("danger");
   submitting(form, async () => {
     await api("/api/live/start", readStrategyForm(form));
     await loadLive();
@@ -499,11 +516,13 @@ document.querySelectorAll(".tab").forEach((tab) =>
   })
 );
 
-// Redraw charts with the new colors when the system theme changes.
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-  if (live.charts.snapshot) live.charts.load(live.state);
+// Redraw charts with the new colors when the theme changes.
+function redrawCharts() {
+  if (live.state) loadLive().catch(console.error); // fresh snapshot includes the latest candles
   if (bt.result) bt.charts.load(bt.result);
-});
+}
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redrawCharts);
+new MutationObserver(redrawCharts).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
 // ------------------------------------------------------------------- boot
 

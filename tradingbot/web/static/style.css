@@ -37,6 +37,25 @@
   }
 }
 
+:root[data-theme="dark"] {
+  --bg: #0e1116;
+  --surface: #161a21;
+  --surface-2: #1d222b;
+  --border: #262c36;
+  --text: #e6e8ec;
+  --muted: #8b93a1;
+  --accent: #5b8def;
+  --up: #26b386;
+  --down: #ef5b52;
+  --warn: #e0a43a;
+  --grid: #1c2129;
+  --line-1: #5b8def;
+  --line-2: #f08a4b;
+  --line-3: #a78bfa;
+  color-scheme: dark;
+}
+
+
 * { box-sizing: border-box; }
 
 body {
@@ -152,6 +171,8 @@ legend { font-size: 12px; color: var(--muted); padding: 0 4px; }
   border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
 }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary.danger { background: var(--down); border-color: var(--down); }
+.btn:focus-visible, .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .btn:disabled { opacity: .6; cursor: progress; }
 
 /* ---------------------------------------------------------------- tables */

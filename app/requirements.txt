@@ -1,6 +1,0 @@
-requests
-wheel
-TA-Lib
-numpy
-websocket_client
-termcolor

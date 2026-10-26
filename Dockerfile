@@ -1,33 +1,18 @@
 # syntax=docker/dockerfile:1
-# Python base
-FROM python:3.10
+FROM python:3.12-slim
 
-# Ensure logging is set up correctly
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
+WORKDIR /opt/app
 
-# Installing 
-RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
-    tar -xzf ta-lib-0.4.0-src.tar.gz && \
-    cd ta-lib/ && \
-    ./configure --prefix=/usr && \
-    make && \
-    make install
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Upgrading pip 
-RUN python3 -m pip install --upgrade pip
+COPY tradingbot/ tradingbot/
+COPY config.example.toml .
 
-# Set up the project directory
-WORKDIR /opt/app/
+EXPOSE 8000
 
-# Install python packages
-COPY app/requirements.txt /opt/app/
-RUN pip3 install -r requirements.txt
-
-COPY app/ /opt/app/
-
-
-CMD ["python3","main.py"]
-
-
+# Mount your own config with: -v $(pwd)/config.toml:/opt/app/config.toml
+CMD ["sh", "-c", "python -m tradingbot -c $( [ -f config.toml ] && echo config.toml || echo config.example.toml ) serve --host 0.0.0.0 --port 8000"]

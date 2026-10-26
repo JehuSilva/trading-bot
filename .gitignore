@@ -156,4 +156,6 @@ dmypy.json
 cython_debug/
 
 examples/
-resources/
+resources/data/
+runs/
+config.toml
